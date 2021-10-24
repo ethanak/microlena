@@ -138,49 +138,49 @@ int microlena_integer(struct microlena_Buffer *buf, char **inps)
     return 1;
 }
 
-static char *milena_mons[]={"","stycznia","lutego","marca","kwietnia",
+static const char *milena_mons[]={"","stycznia","lutego","marca","kwietnia",
 	"maja","czerwca","lipca","sierpnia","wrze\266nia","pa\274dziernika",
 	"listopada","grudnia",NULL};
 
-static char *dec_fin[]={
+static const char *dec_fin[]={
 	"y","a","e","emu","ej","ego","\261","ym","o","ych"};
 
-static char *jed_por[]={
+static const char *jed_por[]={
 	"zerow","pierwsz","drugi","trzeci","czwart",
 	"pi\261t","sz\363st","si\363dm","\363sm","dziewi\261t",
 	"dziesi\261t","jedenast","dwunast","trzynast","czternast",
 	"pi\352tnast","szesnast","siedemnast","osiemnast","dziewi\352tnast"};
-static char *dec_por[]={
+static const char *dec_por[]={
 	NULL,NULL,"dwudziest","trzydziest","czterdziest",
 	"pi\352\346dziesi\261t","sze\266\346dziesi\261t","siedemdziesi\261t",
 	"osiemdziesi\261t","dziewi\352\346dziesi\261t"};
-static char *dec_pac[]={
+static const char *dec_pac[]={
 	NULL,NULL,"dwudziesto","trzydziesto","czterdziesto",
 	"pi\352\346dziesi\352cio","sze\266\346dziesi\352cio","siedemdziesi\352cio",
 	"osiemdziesi\352cio","dziewi\352\346dziesi\352cio"};
 
-static char *hun_por[]={
+static const char *hun_por[]={
 	NULL,NULL,"dwu","trzech","czterech","pi\352\346","sze\266\346",
 		"siedem","osiem","dziewi\352\346"};
-static char *mil_por[]={
+static const char *mil_por[]={
 	NULL,"jedno","dwu","trzy","cztero","pi\352cio","sze\266cio",
 	"siedmio","o\266mio","dziewi\352cio","dziesi\352cio"};
 
-static char *sgl_prd[]={
+static const char *sgl_prd[]={
 	NULL,"jednym","dwoma","trzema","czterema","pi\352cioma","sze\266cioma",
 	"siedmioma","o\266mioma","dziewi\352cioma","dziesi\352cioma"};
 
 
-static char *hun_pac[]={NULL,"stu","dwustu","trzystu",
+static const char *hun_pac[]={NULL,"stu","dwustu","trzystu",
 	"czterystu","pi\352\346set","sze\266\346set","siedemset","osiemset","dziewi\352\346set"};
-static char *hun_bac[]={NULL,"stu","dwustu","trzystu",
+static const char *hun_bac[]={NULL,"stu","dwustu","trzystu",
 	"czterystu","pi\352ciuset","sze\266ciuset","siedmiuset","o\266miuset","dziewi\352ciuset"};
 
-static char *dec_ilu[]={
+static const char *dec_ilu[]={
 	NULL,NULL,"dwudziestu","trzydziestu","czterdziestu",
 	"pi\352\346dziesi\352ciu","sze\266\346dziesi\352ciu","siedemdziesi\352ciu",
 	"osiemdziesi\352ciu","dziewi\352\346dziesi\352ciu"};
-static char *jed_ilu[]={
+static const char * const jed_ilu[]={
 	NULL,"jeden","dw\363ch","trzech","czterech",
 	"pi\352ciu","sze\266ciu","siedmiu","o\266miu","dziewi\352ciu",
 	"dziesi\352ciu","jedenastu","dwunastu","trzynastu","czternastu",
@@ -395,7 +395,7 @@ int microlena_SpeakNumber(struct microlena_Buffer *buf, int n,int mode)
 				pushstr(buf, "drugo", 1);
 			}
 			else if (m) {
-				char *c=dec_fin[mode];
+				const char *c=dec_fin[mode];
 				pushstr(buf, jed_por[m], 1);
 				if ((m==2 || m==3) && *c=='y') c++;
 				if (*c) pushstr(buf, c, 0);
@@ -486,10 +486,10 @@ int microlena_SpeakNumber(struct microlena_Buffer *buf, int n,int mode)
 	return microlena_int(buf, n);
 }
 
-static int get_mildit_type(char **format)
+static int get_mildit_type(const char **format)
 {
 	int ftyp=MILDIT_MX,j;
-    static char *mr_mildit="mmfmnmmcfdmdfbmnappbmxfxf0acmtxnymyfsmsf";
+    static const char *mr_mildit="mmfmnmmcfdmdfbmnappbmxfxf0acmtxnymyfsmsf";
 	for (j=0;mr_mildit[2*j];j++) if (**format==mr_mildit[2*j] && (*format)[1]==mr_mildit[2*j+1]) {
 		*format += 2;
         return j;
@@ -497,7 +497,7 @@ static int get_mildit_type(char **format)
 	return MILDIT_MX;
 }
 
-int microlena_SpeakNumberS(struct microlena_Buffer *buf, int n,char **fmt)
+int microlena_SpeakNumberS(struct microlena_Buffer *buf, int n,const char **fmt)
 {
     int typ = get_mildit_type(fmt);
     return microlena_SpeakNumber(buf, n,typ);

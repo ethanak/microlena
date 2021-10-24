@@ -148,7 +148,7 @@ int microlena_getPhonemes(struct microlena_Buffer *buf, char *outbuf)
 
 
 
-static char *a_string[]={
+static const char *a_string[]={
 /* 0a0 */ "\xa0",
 /* 0a1 */ "!",
 /* 0a2 */ " cent ",
@@ -410,9 +410,9 @@ static int get_unichar(const char **str)
 	return znak;
 }
 
-static struct {
+static const struct {
 	int znak;
-	char *repr;
+	const char *repr;
 } prochar[]={
 {0x2116," numer "},
 {0x2122," tm "},
@@ -473,7 +473,7 @@ int microlena_utf2iso(const char *instr,char *outstr)
 		else if (znak==0x21a) znak=0x162;
 		else if (znak==0x21b) znak=0x163;
 		if (znak<=0x17f) {
-			char *d=a_string[znak-0xa0];
+			const char *d=a_string[znak-0xa0];
 			while (*d) {
 				pushout_u(*d);
 				d++;
@@ -494,7 +494,7 @@ int microlena_utf2iso(const char *instr,char *outstr)
 		}
 		for (i=0;prochar[i].znak;i++) if (prochar[i].znak == znak) break;
 		if (prochar[i].znak) {
-			char *c=prochar[i].repr;
+			const char *c=prochar[i].repr;
 			for (;*c;c++) {
 				pushout_u(*c);
 			}

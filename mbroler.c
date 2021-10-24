@@ -32,7 +32,7 @@ struct voice_param {
 
 struct env_data {
     struct env_data *next;
-    char *name;
+    const char *name;
     int count;
     int offset[8];
     double value[8];
@@ -773,7 +773,7 @@ int microlena_Intonator(struct microlena_Buffer *buf)
 #define length_minlast 140
 #define length_stress 20
 
-static void send_buffer(struct microlena_Buffer *buf, char *c)
+static void send_buffer(struct microlena_Buffer *buf, const char *c)
 {
     while (*c) {
         int n = (buf->mbrol.ring_buffer_pos + buf->mbrol.ring_buffer_len) & 127;
@@ -788,7 +788,7 @@ static void send_buffer(struct microlena_Buffer *buf, char *c)
         }
     }
 }
-static void finalize(struct microlena_Buffer *buf, char *phone, int len)
+static void finalize(struct microlena_Buffer *buf, const char *phone, int len)
 {
     char buffer[32];
     if (phone) sprintf(buffer, "%s %d\n",phone,len);
@@ -818,7 +818,7 @@ static void psampa(struct microlena_Buffer *buf, const struct mbrophon *pho,int 
 static void phb42(struct microlena_Buffer *buf,int n, double d)
 {
     int t = 100 * d;
-    char *c = "";
+    const char *c = "";
     if (t < 0) {
         t = -t;
         c = "-";

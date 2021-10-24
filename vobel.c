@@ -840,7 +840,7 @@ static int microlena_push_unit_sa(struct microlena_Buffer *buf, char *unit, stru
     return 1;
 }
 
-static int microlena_push_number_sa(struct microlena_Buffer *buf, char *modf, struct rcg *recog)
+static int microlena_push_number_sa(struct microlena_Buffer *buf, const char *modf, struct rcg *recog)
 {
     if (*modf == 'd') {
         modf++;

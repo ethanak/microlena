@@ -109,7 +109,7 @@ extern int microlena_isalpha(int c);
 
 extern int microlena_Phraser(struct microlena_Buffer *buf);
 extern int microlena_SpeakNumber(struct microlena_Buffer *buf, int n, int typ);
-extern int microlena_SpeakNumberS(struct microlena_Buffer *buf, int n,char **fmt);
+extern int microlena_SpeakNumberS(struct microlena_Buffer *buf, int n,const char **fmt);
 extern int microlena_integer(struct microlena_Buffer *buf, char **inps);
 extern int microlena_int(struct microlena_Buffer *buf, int n);
 extern int microlena_Spell(struct microlena_Buffer *buf, int count);

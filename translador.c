@@ -394,7 +394,7 @@ static char *dopasuj_rule(char *str, char *start, int sep,
     return microlena_LocString(rule->trans);
 }
 
-static char *dopasuj_litera(char *str, char *start, int sep, int *eat)
+static const char *dopasuj_litera(char *str, char *start, int sep, int *eat)
 {
     int i;
     const struct binlet_ruleset *rs;
@@ -476,7 +476,7 @@ int microlena_Translate(struct microlena_Buffer *buf)
         int eat;
         for (; str && *str && !microlena_isspace(*str);) {
             //printf("STT %s\n",str);
-            char *c = dopasuj_litera(str, start, sep, &eat);
+            const char *c = dopasuj_litera(str, start, sep, &eat);
             if (!c) break;
             pushstr(buf, c, 0);
             str = next_char(str, &sep);

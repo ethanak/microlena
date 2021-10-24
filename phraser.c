@@ -88,7 +88,8 @@ static int push_unit(struct microlena_Buffer *buf, char *unit, int typ)
 int getHour(struct microlena_Buffer *buf)
 {
     int hr=0,mi=0,se=0,hs=0;
-    char *c=buf->inptr, *d;
+    char *c=buf->inptr;
+    const char *d;
     hr=*c++-'0';
     if (microlena_isdigit(*c)) hr = 10 * hr+ *c++-'0';
     if (hr < 0 || hr > 24) return 0;
@@ -99,10 +100,10 @@ int getHour(struct microlena_Buffer *buf)
     mi += *c++ - '0';
     if (microlena_isalnum(*c)) return 0;
     buf->inptr=c;
-    c="fm";
-    if (microlena_SpeakNumberS(buf, hr, &c)<0) return -1;
-    c="f0";
-    if (microlena_SpeakNumberS(buf, mi, &c)<0) return -1;
+    d="fm";
+    if (microlena_SpeakNumberS(buf, hr, &d)<0) return -1;
+    d="f0";
+    if (microlena_SpeakNumberS(buf, mi, &d)<0) return -1;
     return 1;
 }
 
@@ -223,7 +224,7 @@ static int do_numeric(struct microlena_Buffer *buf)
     char *d=microlena_find_unit(c, &c, &fem);
     
     if (d) {
-        char *dx=fem?"fx":"mx";
+        const char *dx=fem?"fx":"mx";
         int typ;
         if (microlena_SpeakNumberS(buf, v, &dx)<0) return -1;
         if (v<0) v=-v;
@@ -258,10 +259,10 @@ static int is_plain_word(const char *str, uint8_t *vow, uint8_t *uc)
     return 0;
 }
 
-static char *spld[]={"a","be","c~'e","de","e","ef","gie","ha",
+static const char *spld[]={"a","be","c~'e","de","e","ef","gie","ha",
     "i","jot","ka","el","em","en","o","pe","ku","er","es",
     "te","u","fa\263","vu","iks","igrek","zet"};
-static char *sple[]={"\261a zogonkiem","\352e z ogonkiem","\363o z kresk\261",
+static const char *sple[]={"\261a zogonkiem","\352e z ogonkiem","\363o z kresk\261",
     "\277\277et","\277\277i","\361ni","\266\266i","\346ci",NULL};
 
 int microlena_SpellChar(struct microlena_Buffer *buf, char c, int *bg)
