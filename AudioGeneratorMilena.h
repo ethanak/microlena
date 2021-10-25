@@ -2,10 +2,14 @@
 
 struct microlena_Buffer;
 
+extern "C" {
+    extern void microlena_setUserDict(const char * const  *units, const char * const * dict);
+};
+
 class AudioGeneratorMilena: public AudioGeneratorMbrola
 {
     public:
-    AudioGeneratorMilena() : milena(NULL),decipoint(""),flags(0) {};
+    AudioGeneratorMilena() : milena(NULL),decipoint(""),flags(0),udic(NULL) {};
     ~AudioGeneratorMilena();
 
     bool begin(const char *str, AudioOutput *outfile) override;
@@ -18,7 +22,6 @@ class AudioGeneratorMilena: public AudioGeneratorMbrola
     bool setDeciPoint(const char *txt);
     void setAltColon(bool alt) {flags = (alt)?(flags | 8):(flags & ~8);};
     bool getAltColon(void) {return (flags & 8) != 0;};
-        
 
     enum {
         NO_SUBPHRASES = 1,
@@ -28,6 +31,7 @@ class AudioGeneratorMilena: public AudioGeneratorMbrola
     };
     private:
     struct microlena_Buffer *milena;
+    struct microlena_userdic *udic;
     char decipoint[16];
     uint8_t flags;
     uint8_t phase;

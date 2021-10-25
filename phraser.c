@@ -402,6 +402,8 @@ int microlena_Phraser(struct microlena_Buffer *buf)
             else continue;
         }
         uint8_t vow=0, uc=0;
+        while (*buf->inptr && !microlena_isalpha(*buf->inptr)) buf->inptr++;
+        if (!*buf->inptr) break;
         rc=is_plain_word(buf->inptr, &vow, &uc);
         if (rc) {
             blank(buf);

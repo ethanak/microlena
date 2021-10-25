@@ -37,183 +37,213 @@ static int eow(const char *c)
     
 }
 
+static struct{
+    const char *beg;
+    const char *end;
+} udic_param[8];
+static const char * const *user_units;
+static const char * const *user_udict;
+
+void microlena_setUserDict(const char * const *units, const char * const *dict)
+{
+    user_units = units;
+    user_udict = dict;
+}
+static const char *match_pattern_udict(const char *c, const char *d, int flags, int *npar)
+{
+    *npar=0;
+    while (*d) {
+        if (*d == '_') {
+            while (*c && microlena_isspace(*c)) c++;
+            d++;
+            continue;
+        }
+        if (*d == '+') {
+            if (!(microlena_isspace(*c))) break;
+            while (*c && microlena_isspace(*c)) c++;
+            d++;
+            continue;
+        }
+        if (*d == '`') {
+            while (*c && microlena_isspace(*c)) c++;
+            if (*c == '\'' || *c =='`') {
+                c++;
+                while (*c && microlena_isspace(*c)) c++;
+            }
+            d++;
+            continue;
+        }
+        if (*d == '\'') {
+            if (*c != '\'' && *c !='`') {
+                break;
+            }
+            c++;
+            while (*c && microlena_isspace(*c)) c++;
+            d++;
+            continue;
+        }
+        if (*d == '~') {
+            if (d[1] == '~') {
+                while (*c && (*c == ' ' || microlena_isspace(*c))) c++;
+                d+=2;
+                continue;
+            }
+            if (*c++!='-') break;
+            while (*c && microlena_isspace(*c)) c++;
+            d++;
+            continue;
+        }
+        if (*d == '[') {
+            d++;
+            while (*d && *d!=']') {
+                if (*d == *c) break;
+                d++;
+            }
+            if (!*d || *d == ']') break;
+            while (*d && *d!=']') d++;
+            if (!*d) break;
+            d++;
+            continue;
+        }
+        if (*d == '\\') {
+            d++;
+            if (*c == *d) c++;
+            d++;
+            continue;
+        }
+        if (*d=='(') {
+            const char *e;
+            uint8_t found=0;
+            for (;;) {
+                e=c;
+                d++;
+                while (*d && *d!='|' && *d!=')') {
+                    if (*e != *d) break;
+                    d++;e++;
+                }
+                if (!*d) return 0;
+                if (*d==')' || *d=='|') {
+                    found=1;
+                    break;
+                }
+                while (*d && *d!=')' && *d != '|') d++;
+                if (*d != '|') break;
+            }
+            if (!found) break;
+            while (*d && *d!=')') d++;
+            if (!*d) break;
+            if (*npar < 8) {
+                udic_param[*npar].beg = c;
+                udic_param[(*npar)++].end = e;
+            }
+            c=e;
+            d++;
+            continue;
+        }
+            
+        if (*d=='#') {
+            d++;
+            int nmac = *d - 'A';
+            d=udict_macros[nmac];
+            const char *e;
+            uint8_t found=0;
+            for (;;d++) {
+                e=c;
+                while (*d && *d!='|') {
+                    if (*e != *d) break;
+                    d++;e++;
+                }
+                if (!*d || *d=='|') {
+                    
+                    found=1;
+                    break;
+                }
+                while (*d && *d != '|') d++;
+                if (!*d) {
+                    break;
+                }
+            }
+            if (!found) break;
+            d="";
+            if (*npar < 8) {
+                udic_param[*npar].beg = c;
+                udic_param[(*npar)++].end = e;
+            }
+            c=e;
+            break;
+            
+        }
+        if (!eqc(*c, *d)) {
+            break;
+        }
+        c++;
+        d++;
+    }
+    if (*d) return NULL;
+    if (!eow(c)) return NULL;
+    if (flags & UDIF_ATEND) {
+        if (!microlena_eoph(c, NULL)) return NULL;
+    }
+    return c;
+}
+
 int microlena_match_udict(struct microlena_Buffer *buf)
 {
-    int i,npar;
-    const char *c, *d;
-    struct{
-        const char *beg;
-        const char *end;
-    } param[8];
-    for (i=udict_count-1;i>=0;i--) {
+    int i,npar, flags, stress;
+    const char *c, *d, *value = NULL; uint8_t found = 0;
+    if(user_udict) for (i=0;user_udict[i]; i++) {
+        c=buf->inptr;
+        npar=0;
+        d=user_udict[i];
+        flags = *d++;
+        if (!(c=match_pattern_udict(c, d, flags, &npar))) continue;
+        while (*d++);
+        value = d;
+        stress = (flags >> 4) & 7;
+        found = 1;
+        break;
+    }
+    if (!found) for (i=udict_count-1;i>=0;i--) {
         c=buf->inptr;
         npar=0;
     
         d=STR(udict_data[i].pattern_offset);
-        while (*d) {
-            if (*d == '_') {
-                while (*c && microlena_isspace(*c)) c++;
-                d++;
-                continue;
-            }
-            if (*d == '+') {
-                if (!(microlena_isspace(*c))) break;
-                while (*c && microlena_isspace(*c)) c++;
-                d++;
-                continue;
-            }
-            if (*d == '`') {
-                while (*c && microlena_isspace(*c)) c++;
-                if (*c == '\'' || *c =='`') {
-                    c++;
-                    while (*c && microlena_isspace(*c)) c++;
-                }
-                d++;
-                continue;
-            }
-            if (*d == '\'') {
-                if (*c != '\'' && *c !='`') {
-                    break;
-                }
-                c++;
-                while (*c && microlena_isspace(*c)) c++;
-                d++;
-                continue;
-            }
-            if (*d == '~') {
-                if (d[1] == '~') {
-                    while (*c && (*c == ' ' || microlena_isspace(*c))) c++;
-                    d+=2;
-                    continue;
-                }
-                if (*c++!='-') break;
-                while (*c && microlena_isspace(*c)) c++;
-                d++;
-                continue;
-            }
-            if (*d == '[') {
-                d++;
-                while (*d && *d!=']') {
-                    if (*d == *c) break;
-                    d++;
-                }
-                if (!*d || *d == ']') break;
-                while (*d && *d!=']') d++;
-                if (!*d) break;
-                d++;
-                continue;
-            }
-            if (*d == '\\') {
-                d++;
-                if (*c == *d) c++;
-                d++;
-                continue;
-            }
-            if (*d=='(') {
-                const char *e;
-                uint8_t found=0;
-                for (;;) {
-                    e=c;
-                    d++;
-                    while (*d && *d!='|' && *d!=')') {
-                        if (*e != *d) break;
-                        d++;e++;
-                    }
-                    if (!*d) return 0;
-                    if (*d==')' || *d=='|') {
-                        found=1;
-                        break;
-                    }
-                    while (*d && *d!=')' && *d != '|') d++;
-                    if (*d != '|') break;
-                }
-                if (!found) break;
-                while (*d && *d!=')') d++;
-                if (!*d) break;
-                if (npar < 8) {
-                    param[npar].beg = c;
-                    param[npar++].end = e;
-                }
-                c=e;
-                d++;
-                continue;
-            }
-                
-            if (*d=='#') {
-                d++;
-                int nmac = *d - 'A';
-                d=udict_macros[nmac];
-                const char *e;
-                uint8_t found=0;
-                for (;;d++) {
-                    e=c;
-                    while (*d && *d!='|') {
-                        if (*e != *d) break;
-                        d++;e++;
-                    }
-                    if (!*d || *d=='|') {
-                        
-                        found=1;
-                        break;
-                    }
-                    while (*d && *d != '|') d++;
-                    if (!*d) {
-                        break;
-                    }
-                }
-                if (!found) break;
-                d="";
-                if (npar < 8) {
-                    param[npar].beg = c;
-                    param[npar++].end = e;
-                }
-                c=e;
-                break;
-                
-            }
-            if (!eqc(*c, *d)) {
-                break;
-            }
-            c++;
-            d++;
-        }
-        if (*d) continue;
-        if (!eow(c)) continue;
-        
-        if (udict_data[i].flags & UDIF_ATEND) {
-            if (!microlena_eoph(c, NULL)) continue;
-        }
-        if (!(udict_data[i].flags & UDIF_ABBR) && udict_data[i].stress) {
-            char bf[8];
-            sprintf(bf,"[%d]",udict_data[i].stress);
-            pushstr(buf,bf,1);
-        
-        }
-        else blank(buf);
-        if (udict_data[i].flags & UDIF_ABBR) {
-            if (microlena_Spell(buf, c-buf->inptr)<0) return -1;
-        }
-        else if (udict_data[i].flags & UDIF_COPY) {
-            while (buf->inptr < c) {
-                *buf->outptr++ = microlena_tolower(*buf->inptr++);
-            }
-        }
-        else {
-            int nr = 0;
-            const char *ce=STR(udict_data[i].value_offset);
-            for (;*ce;ce++) {
-                if (*ce != '%') pushout(buf,*ce);
-                else if (nr < npar) {
-                    const char *de = param[nr].beg;
-                    for (;de < param[nr].end;de++) pushout(buf, *de);
-                    nr++;
-                }
-            }
-        }
-        buf->inptr=(char *)c;
-        return 1;
+        if (!(c=match_pattern_udict(c, d, udict_data[i].flags, &npar))) continue;
+        value = STR(udict_data[i].value_offset);
+        flags = udict_data[i].flags;
+        stress = udict_data[i].stress;
+        found = 1;
+        break;
     }
-    return 0;
+    if (!found) return 0;
+    if (!(flags & UDIF_ABBR) && stress) {
+        char bf[8];
+        sprintf(bf,"[%d]",stress);
+        pushstr(buf,bf,1);
+    }
+    else blank(buf);
+    if (flags & UDIF_ABBR) {
+        if (microlena_Spell(buf, c-buf->inptr)<0) return -1;
+    }
+    else if (flags & UDIF_COPY) {
+        while (buf->inptr < c) {
+            *buf->outptr++ = microlena_tolower(*buf->inptr++);
+        }
+    }
+    else {
+        int nr = 0;
+        const char *ce=value;
+        for (;*ce;ce++) {
+            if (*ce != '%') pushout(buf,*ce);
+            else if (nr < npar) {
+                const char *de = udic_param[nr].beg;
+                for (;de < udic_param[nr].end;de++) pushout(buf, *de);
+                nr++;
+            }
+        }
+    }
+    buf->inptr=(char *)c;
+    return 1;
 }
 
 #define TYP_VERB 1
@@ -793,6 +823,18 @@ static int microlena_recognize_pattern(struct microlena_Buffer *buf, char *patte
 char *microlena_find_unit(char *str, char **ostr, uint8_t *female)
 {
     int i;
+    if (user_units) for (i=0; user_units[i];i++) {
+        uint8_t femm = (user_units[i][0] == 'f') ? 1 : 0;
+        char *c=str;
+        const char *d=user_units[i]+1;
+        for (;*d;d++) if (*c++!=*d) break;
+        if (*d) continue;
+        if (eow(c)) {
+            *ostr=c;
+            if (female) *female=femm;
+            return (char *)d+1;
+        }
+    }
     for (i=0; i<unit_count; i++) {
         char *c=str, *d=STR(units_data[i].name_offset);
         for (;*d;d++) if (*c++!=*d) break;

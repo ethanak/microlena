@@ -105,7 +105,8 @@ extern int microlena_isalpha(int c);
 #define microlena_isdigit(a) (a && isdigit((int)(a) & 255))
 #define microlena_isspace(a) (a && isspace((int)(a) & 255))
 
-// frazer
+extern void microlena_setUserDict(const char * const *units, const char *const *dict);
+
 
 extern int microlena_Phraser(struct microlena_Buffer *buf);
 extern int microlena_SpeakNumber(struct microlena_Buffer *buf, int n, int typ);
@@ -140,7 +141,7 @@ extern int microlena_eoph(const char *in, const char **out);
 extern int microlena_match_udict(struct microlena_Buffer *buf);
 extern int microlena_match_recognizer(struct microlena_Buffer *buf);
 
-// pprstresser
+// prestresser
 
 extern int microlena_WordClass(char *word, uint8_t *stress, uint8_t *stressp);
 extern int microlena_PreStress(struct microlena_Buffer *buf);
