@@ -128,7 +128,8 @@ dowolny ciąg liter do końca wyrazu.
 W przypadku tłumaczenia, zastosowanie znaku "%" powoduje wstawienie w
 dane miejsce w tłumaczeniu ciągu znaków odpowiadających alternatywie
 lub gwiadce i zamienonego na małe litery. Kolejne znaki "%" odpowiadają
-kolejnym alternatywom.
+kolejnym alternatywom. Jeśli po znaku % występuje cyfra, będzie brana
+pod uwagę n-ta alternatywa (licząc od 1).
 
 Przykładowo:
 
@@ -165,12 +166,13 @@ Zasady są dopasowywane kolejno na zasadzie "pierwszy pasujący wzorzec kończy 
 
 ## Wywołanie programu:
 
-```python3 makeudict.py <plik_wejściowy> [-out <plik_wynikowy>] [-name <nazwa struktury>]```
+```python3 makeudict.py <plik_wejściowy> [-out <plik_wynikowy>] [-name <nazwa struktury>] [-defs]```
 
 W pliku wynikowym zostaną zawarte definicje tablic ```userdic_units``` i ```userdic_lines```.
-Jeśli podamy parametr -name, napis ```userdic``` zostanie zamieniony na podany.
-Jeśli nie podamy parametru -out, plik wynikowy nie będzie utworzony, wynik
+* Jeśli podamy parametr -name, napis ```userdic``` zostanie zamieniony na podany.
+* Jeśli nie podamy parametru -out, plik wynikowy nie będzie utworzony, wynik
 będzie jedynie wypisany na konsoli.
+* Jeśli podamy parametr -defs, w pliku wynikowym zostaną umieszczone makra ```USER_UNITS``` i ```USER_LINES```, które mogą być wykorzystane przy kompilacji warunkowej.
 
 Przykładowo:
 
@@ -187,6 +189,15 @@ Aby dołączyć powstałe w ten sposób tablice do aplikacji, należy użyć fun
 podając odpowiednie parametry. Każdy z parametrów może być NULL. Funkcję można wywołać
 w dowolnym momencie, umieszcza ona po prostu wskaźniki do tablic w zmiennych statycznych.
 
+Jeśli użyto parametru -defs przy tworzeniu pliku słownika, wywołanie powinno wyglądać następująco:
+
+```C
+#ifdef USER_UNITS
+    microlena_setUserDict(USER_UNITS, USER_LINES);
+#endif
+```
+
+
 ## Plik demo
 
 Można wypróbować działanie na załączonym pliku scifi.txt:
@@ -195,9 +206,10 @@ Można wypróbować działanie na załączonym pliku scifi.txt:
 #unit pps parsek na sekundę|parseki na sekundę|parseków na sekundę|parseka na sekundę
 
 warp łorp // tak lata Enterprise
-Alderaan alderan $3 // ojczysta planeta pewnej księżniczki
 Alderaan(em|ie|u|owi) alderan%
+Alderaan alderan $3
 Galapagos $3
-oir $S // Organizacja Istot Rozumnych
 oir-(em|u|owi|ze) o~'i~'er%
+oir $S // Organizacja Istot Rozumnych
+rodo rodo // wymowa skrótu jak normalnego słowa
 ```

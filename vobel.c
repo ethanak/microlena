@@ -235,10 +235,16 @@ int microlena_match_udict(struct microlena_Buffer *buf)
         const char *ce=value;
         for (;*ce;ce++) {
             if (*ce != '%') pushout(buf,*ce);
-            else if (nr < npar) {
-                const char *de = udic_param[nr].beg;
-                for (;de < udic_param[nr].end;de++) pushout(buf, *de);
-                nr++;
+            else {
+                if (ce[1] >= '1' && ce[1] <='8') {
+                    nr = ce[1] - '1';
+                    ce++;
+                }
+                if (nr < npar) {
+                    const char *de = udic_param[nr].beg;
+                    for (;de < udic_param[nr].end;de++) pushout(buf, *de);
+                    nr++;
+                }
             }
         }
     }

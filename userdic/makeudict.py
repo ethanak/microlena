@@ -7,6 +7,11 @@ args=sys.argv[1:]
 dicname = args.pop(0)
 uname = 'userdia'
 outname = None
+defines = False
+
+def error(s):
+    sys.stderr.write(s+'\n')
+    exit(1)
 
 while args:
     d=args.pop(0)
@@ -14,6 +19,8 @@ while args:
         uname = args.pop(0)
     elif d == '-out':
         outname = args.pop(0)
+    elif d == '-defs':
+        defines = True
     else:
         error("Nieznany parametr %s" % d)
 
@@ -292,9 +299,6 @@ def repstr(napis):
 units = []
 lines = []
 
-def error(s):
-    sys.stderr.write(s+'\n')
-    exit(1)
 
 rcs=re.compile(r"^[a-ząęśćńóźżł](~')?(_?[a-z@ąęśćńóźżł](~')?)*$")
 
@@ -431,14 +435,25 @@ def genstri(su):
     return '"'+''.join(sx)+'"'
 def genstr(sb):
     ss = list(genstri(s) for s in sb)
+    ss.append('NULL')
     return ',\n'.join(ss)
-    
 
-sout = []
-if units:
-    sout.append('static const char *const %s_units[]={%s,NULL};' % (uname, genstr(units)))
-if lines:
-    sout.append('static const char *const %s_lines[]={%s,NULL};' % (uname, genstr(lines)))
+if defines:
+    sout=['#ifndef USER_UNITS',
+        '#define USER_UNITS %s' % (('%s_units' % uname) if units else 'NULL'),
+        '#endif',
+        '#ifndef USER_LINES',
+        '#define USER_LINES %s' % (('%s_lines' % uname) if lines else 'NULL'),
+        '#endif'
+        ]
+    if units:
+        sout.append('static const char *const %s_units[]={%s};' % (uname, genstr(units)))
+    if lines:
+        sout.append('static const char *const %s_lines[]={%s};' % (uname, genstr(lines)))
+else:
+    sout = [
+        'static const char *const %s_units[]={%s};' % (uname, genstr(units)),
+        'static const char *const %s_lines[]={%s};' % (uname, genstr(lines))]
     
 sout = '\n'.join(sout)
 print(sout)
