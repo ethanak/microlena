@@ -9,7 +9,7 @@ extern "C" {
 class AudioGeneratorMilena: public AudioGeneratorMbrola
 {
     public:
-    AudioGeneratorMilena() : milena(NULL),decipoint(""),flags(0),udic(NULL) {};
+    AudioGeneratorMilena() : milena(NULL),udic(NULL),decipoint(""),flags(0) {};
     ~AudioGeneratorMilena();
 
     bool begin(const char *str, AudioOutput *outfile) override;
